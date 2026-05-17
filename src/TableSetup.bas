@@ -13,6 +13,7 @@ Private Const COL_PREDECESSOR As Integer = 7
 Private Const COL_AREA As Integer = 8
 Private Const COL_OWNER As Integer = 9
 Private Const COL_STATUS As Integer = 10
+Private Const COL_COLOR As Integer = 11
 
 Public Sub CreateTaskTable()
     Dim ws As Worksheet
@@ -31,6 +32,7 @@ Public Sub CreateTaskTable()
     End If
 
     ' Write headers (matching MS Project German field names where applicable)
+    ' Chr(228)=ae, Chr(246)=oe, Chr(252)=ue, Chr(196)=Ae, Chr(214)=Oe, Chr(220)=Ue
     With ws
         .Cells(1, COL_ID).Value = "ID"
         .Cells(1, COL_LAYOUT).Value = "Layoutname"
@@ -38,16 +40,17 @@ Public Sub CreateTaskTable()
         .Cells(1, COL_DURATION).Value = "Dauer"
         .Cells(1, COL_START).Value = "Anfang"
         .Cells(1, COL_END).Value = "Ende"
-        .Cells(1, COL_PREDECESSOR).Value = "Vorgänger"
-        .Cells(1, COL_AREA).Value = "Bereich/Fläche"
+        .Cells(1, COL_PREDECESSOR).Value = "Vorg" & Chr(228) & "nger"
+        .Cells(1, COL_AREA).Value = "Bereich/Fl" & Chr(228) & "che"
         .Cells(1, COL_OWNER).Value = "Verantwortlicher"
         .Cells(1, COL_STATUS).Value = "Status"
+        .Cells(1, COL_COLOR).Value = "Farbe"
     End With
 
     ' Create Excel table
     Set tbl = ws.ListObjects.Add( _
         SourceType:=xlSrcRange, _
-        Source:=ws.Range("A1:J1"), _
+        Source:=ws.Range("A1:K1"), _
         XlListObjectHasHeaders:=xlYes _
     )
     tbl.Name = "Vorgangsliste"
@@ -64,6 +67,7 @@ Public Sub CreateTaskTable()
     ws.Columns(COL_AREA).ColumnWidth = 20
     ws.Columns(COL_OWNER).ColumnWidth = 22
     ws.Columns(COL_STATUS).ColumnWidth = 18
+    ws.Columns(COL_COLOR).ColumnWidth = 10
 
     ' Date format for Start and End
     ws.Columns(COL_START).NumberFormat = "DD.MM.YYYY"
@@ -81,11 +85,14 @@ Private Sub AddStatusValidation(ws As Worksheet)
     ' Apply to data rows (row 2 onward, capped at row 1000)
     Set rng = ws.Range(ws.Cells(2, COL_STATUS), ws.Cells(1000, COL_STATUS))
 
+    Dim statusList As String
+    statusList = "Geplant,Best" & Chr(228) & "tigt,In Arbeit,Abgeschlossen,Kollision"
+
     With rng.Validation
         .Delete
         .Add Type:=xlValidateList, _
              AlertStyle:=xlValidAlertStop, _
-             Formula1:="Geplant,Bestätigt,In Arbeit,Abgeschlossen,Kollision"
-        .ErrorMessage = "Bitte einen gültigen Status aus der Liste wählen."
+             Formula1:=statusList
+        .ErrorMessage = "Bitte einen g" & Chr(252) & "ltigen Status aus der Liste w" & Chr(228) & "hlen."
     End With
 End Sub
