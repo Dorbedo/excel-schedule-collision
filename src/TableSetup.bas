@@ -86,7 +86,6 @@ Private Sub AddStatusValidation(ws As Worksheet)
         .Add Type:=xlValidateList, _
              AlertStyle:=xlValidAlertStop, _
              Formula1:="Geplant,Bestätigt,In Arbeit,Abgeschlossen,Kollision"
-        .ShowDropDown = False
         .ErrorMessage = "Bitte einen gültigen Status aus der Liste wählen."
     End With
 End Sub
