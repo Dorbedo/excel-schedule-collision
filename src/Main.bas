@@ -5,6 +5,10 @@ Public Sub RunSetup()
     TableSetup.CreateTaskTable
 End Sub
 
+Public Sub RunColorProcessing()
+    ColorHelper.ProcessColorColumn
+End Sub
+
 Public Sub RunCollisionCheck()
     CollisionChecker.CheckAll
 End Sub
