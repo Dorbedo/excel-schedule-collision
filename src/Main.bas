@@ -6,6 +6,10 @@ Public Sub RunSetup()
     CalibrationSetup.CreateCalibrationSheet
 End Sub
 
+Public Sub RunImportLayout()
+    LayoutImage.RunImportLayoutImage
+End Sub
+
 Public Sub RunColorProcessing()
     ColorHelper.ProcessColorColumn
 End Sub
