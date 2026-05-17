@@ -6,40 +6,45 @@ Public Sub RunSetup()
     CalibrationSetup.CreateCalibrationSheet
 End Sub
 
+' Run once after setup to create the layout selector dropdown form.
+Public Sub RunBuildForms()
+    FormBuilder.BuildLayoutSelectorForm
+End Sub
+
 Public Sub RunImportLayout()
     LayoutImage.RunImportLayoutImage
 End Sub
 
 Public Sub RunPlaceCalibrationRect()
     Dim layoutName As String
-    layoutName = InputBox("Layoutname:", "Kalibrierung platzieren")
-    If Trim(layoutName) = "" Then Exit Sub
-    Calibration.PlaceCalibrationRect Trim(layoutName)
+    layoutName = Calibration.PickLayoutName("Kalibrierung platzieren")
+    If layoutName = "" Then Exit Sub
+    Calibration.PlaceCalibrationRect layoutName
 End Sub
 
 Public Sub RunApplyCalibrationRect()
     Dim layoutName As String
-    layoutName = InputBox("Layoutname:", "Kalibrierung " & Chr(252) & "bernehmen")
-    If Trim(layoutName) = "" Then Exit Sub
-    Calibration.ApplyCalibrationRect Trim(layoutName)
-End Sub
-
-Public Sub RunColorProcessing()
-    ColorHelper.ProcessColorColumn
+    layoutName = Calibration.PickLayoutName("Kalibrierung " & Chr(252) & "bernehmen")
+    If layoutName = "" Then Exit Sub
+    Calibration.ApplyCalibrationRect layoutName
 End Sub
 
 Public Sub RunShowCalibrationMarkers()
     Dim layoutName As String
-    layoutName = InputBox("Layoutname:", "Kalibrierungsmarker anzeigen")
-    If Trim(layoutName) = "" Then Exit Sub
-    Calibration.ShowCalibrationMarkers Trim(layoutName)
+    layoutName = Calibration.PickLayoutName("Kalibrierungsmarker anzeigen")
+    If layoutName = "" Then Exit Sub
+    Calibration.ShowCalibrationMarkers layoutName
 End Sub
 
 Public Sub RunHideCalibrationMarkers()
     Dim layoutName As String
-    layoutName = InputBox("Layoutname:", "Kalibrierungsmarker ausblenden")
-    If Trim(layoutName) = "" Then Exit Sub
-    Calibration.HideCalibrationMarkers Trim(layoutName)
+    layoutName = Calibration.PickLayoutName("Kalibrierungsmarker ausblenden")
+    If layoutName = "" Then Exit Sub
+    Calibration.HideCalibrationMarkers layoutName
+End Sub
+
+Public Sub RunColorProcessing()
+    ColorHelper.ProcessColorColumn
 End Sub
 
 Public Sub RunCollisionCheck()
