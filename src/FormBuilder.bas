@@ -94,8 +94,7 @@ Public Sub BuildLayoutSelectorForm()
 NoTrust:
     MsgBox "Fehler: Zugriff auf das VBA-Projekt nicht erlaubt." & vbLf & vbLf & _
            "Bitte aktivieren:" & vbLf & _
-           "Excel Optionen " & Chr(8594) & " Trust Center " & Chr(8594) & _
-           " Makroeinstellungen " & Chr(8594) & vbLf & _
+           "Excel Optionen => Trust Center => Makroeinstellungen" & vbLf & _
            Chr(34) & "Zugriff auf das VBA-Projektobjektmodell vertrauen" & Chr(34), _
            vbCritical
 End Sub
