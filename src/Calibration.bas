@@ -203,8 +203,8 @@ Private Sub PlaceAxisMarkers(ws As Worksheet, tbl As ListObject, layoutName As S
     If tbl Is Nothing Then Exit Sub
     If tbl.DataBodyRange Is Nothing Then Exit Sub
 
-    Const BOX_W  As Double = 34
-    Const BOX_H  As Double = 22
+    Const BOX_W  As Double = 22
+    Const BOX_H  As Double = 14
     Const MARGIN As Double = 3
 
     Dim sanName As String
@@ -248,7 +248,7 @@ Private Sub PlaceAxisMarkers(ws As Worksheet, tbl As ListObject, layoutName As S
         End With
         With mkr.TextFrame2
             .TextRange.Text = lbl & Chr(10) & Format(m, "0.00") & "m"
-            .TextRange.Font.Size = 7
+            .TextRange.Font.Size = 6
             .TextRange.Font.Bold = msoTrue
             .TextRange.Font.Fill.ForeColor.RGB = RGB(255, 255, 255)
             .VerticalAnchor = msoAnchorMiddle
