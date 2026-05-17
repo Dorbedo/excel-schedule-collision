@@ -22,43 +22,43 @@ Public Sub BuildLayoutSelectorForm()
     Set vbc = vbp.VBComponents.Add(3)
     vbc.Name = "frmLayoutSelector"
 
-    ' Configure form dimensions and caption
+    ' Add controls — only names assigned here; all properties set in Initialize
+    ' (Controls.Add returns the base Control interface via late binding,
+    '  type-specific properties like Style/Default/Cancel must be set at runtime)
     Dim frm As Object
     Set frm = vbc.Designer
-    frm.Caption = "Layout ausw" & Chr(228) & "hlen"
-    frm.Width = 240
-    frm.Height = 110
-    frm.StartUpPosition = 1  ' CenterOwner
+    Dim tmp As Object
+    Set tmp = frm.Controls.Add("Forms.ComboBox.1", "cboLayout", True)
+    Set tmp = frm.Controls.Add("Forms.CommandButton.1", "btnOK", True)
+    Set tmp = frm.Controls.Add("Forms.CommandButton.1", "btnCancel", True)
+    Set tmp = Nothing
 
-    ' ComboBox — drop-down list only (Style = 2)
-    Dim cbo As Object
-    Set cbo = frm.Controls.Add("Forms.ComboBox.1", "cboLayout", True)
-    cbo.Left = 8:  cbo.Top = 8
-    cbo.Width = 214: cbo.Height = 20
-    cbo.Style = 2
-
-    ' OK button
-    Dim btnOK As Object
-    Set btnOK = frm.Controls.Add("Forms.CommandButton.1", "btnOK", True)
-    btnOK.Caption = "OK"
-    btnOK.Left = 106: btnOK.Top = 40
-    btnOK.Width = 56:  btnOK.Height = 20
-    btnOK.Default = True
-
-    ' Cancel button
-    Dim btnCancel As Object
-    Set btnCancel = frm.Controls.Add("Forms.CommandButton.1", "btnCancel", True)
-    btnCancel.Caption = "Abbrechen"
-    btnCancel.Left = 166: btnCancel.Top = 40
-    btnCancel.Width = 60:  btnCancel.Height = 20
-    btnCancel.Cancel = True
-
-    ' Inject form event code (built line by line to avoid line-continuation limit)
+    ' Inject all code; Initialize handles form + control sizing and type-specific props
     Dim c As String
     Dim q As String
     q = Chr(34)
 
     c = "Private mResult As String" & vbLf
+    c = c & vbLf
+    c = c & "Private Sub UserForm_Initialize()" & vbLf
+    c = c & "    Me.Caption = " & q & "Layout ausw" & q & " & Chr(228) & " & q & "hlen" & q & vbLf
+    c = c & "    Me.Width = 240: Me.Height = 110" & vbLf
+    c = c & "    Me.StartUpPosition = 1" & vbLf
+    c = c & "    With cboLayout" & vbLf
+    c = c & "        .Left = 8: .Top = 8: .Width = 214: .Height = 20" & vbLf
+    c = c & "        .Style = 2" & vbLf
+    c = c & "    End With" & vbLf
+    c = c & "    With btnOK" & vbLf
+    c = c & "        .Caption = " & q & "OK" & q & vbLf
+    c = c & "        .Left = 106: .Top = 40: .Width = 56: .Height = 20" & vbLf
+    c = c & "        .Default = True" & vbLf
+    c = c & "    End With" & vbLf
+    c = c & "    With btnCancel" & vbLf
+    c = c & "        .Caption = " & q & "Abbrechen" & q & vbLf
+    c = c & "        .Left = 166: .Top = 40: .Width = 60: .Height = 20" & vbLf
+    c = c & "        .Cancel = True" & vbLf
+    c = c & "    End With" & vbLf
+    c = c & "End Sub" & vbLf
     c = c & vbLf
     c = c & "Public Property Get SelectedLayout() As String" & vbLf
     c = c & "    SelectedLayout = mResult" & vbLf
