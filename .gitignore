@@ -1,0 +1,14 @@
+# Excel temp files
+~$*.xl*
+~$*.xls*
+~$*.xlsm
+
+# Excel lock files
+*.xlk
+
+# Backup files
+*.bak
+
+# Windows
+Thumbs.db
+desktop.ini
