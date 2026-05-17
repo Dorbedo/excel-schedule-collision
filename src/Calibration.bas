@@ -1,10 +1,12 @@
 Attribute VB_Name = "Calibration"
 Option Explicit
 
-Private Const CAL_SHEET   As String = "Kalibrierung"
-Private Const TABLE_X     As String = "Kalibrierung_X"
-Private Const TABLE_Y     As String = "Kalibrierung_Y"
-Private Const RECT_PREFIX As String = "Kalibrierung_"
+Private Const CAL_SHEET    As String = "Kalibrierung"
+Private Const TABLE_X      As String = "Kalibrierung_X"
+Private Const TABLE_Y      As String = "Kalibrierung_Y"
+Private Const RECT_PREFIX  As String = "Kalibrierung_"
+Private Const MKR_PREFIX_X As String = "KalMkr_X_"
+Private Const MKR_PREFIX_Y As String = "KalMkr_Y_"
 
 ' Places a semi-transparent calibration rectangle on the layout sheet.
 ' The user drags the corners to 2 known grid reference points, then calls
@@ -121,6 +123,140 @@ Public Sub ApplyCalibrationRect(layoutName As String)
     If Not calWs Is Nothing Then calWs.Activate
 
     MsgBox "Kalibrierung f" & Chr(252) & "r '" & layoutName & "' gespeichert.", vbInformation
+End Sub
+
+' ── Calibration markers ──────────────────────────────────────────────────────
+
+' Places small labelled boxes on the layout sheet at each calibrated position.
+' X markers appear along the top edge of the image, Y markers along the left edge.
+Public Sub ShowCalibrationMarkers(layoutName As String)
+    Dim ws As Worksheet
+    Set ws = LayoutImage.GetLayoutSheet(layoutName)
+    If ws Is Nothing Then
+        MsgBox "Layout '" & layoutName & "' nicht gefunden.", vbExclamation
+        Exit Sub
+    End If
+
+    HideCalibrationMarkers layoutName
+
+    Dim calWs As Worksheet
+    On Error Resume Next
+    Set calWs = ThisWorkbook.Sheets(CAL_SHEET)
+    On Error GoTo 0
+    If calWs Is Nothing Then Exit Sub
+
+    Dim pic As Shape
+    Set pic = LayoutImage.GetLayoutPicture(layoutName)
+    Dim imgLeft As Double, imgTop As Double
+    If pic Is Nothing Then
+        imgLeft = 0: imgTop = 0
+    Else
+        imgLeft = pic.Left: imgTop = pic.Top
+    End If
+
+    Dim tblX As ListObject, tblY As ListObject
+    On Error Resume Next
+    Set tblX = calWs.ListObjects(TABLE_X)
+    Set tblY = calWs.ListObjects(TABLE_Y)
+    On Error GoTo 0
+
+    PlaceAxisMarkers ws, tblX, layoutName, True, imgLeft, imgTop
+    PlaceAxisMarkers ws, tblY, layoutName, False, imgLeft, imgTop
+
+    ws.Activate
+End Sub
+
+' Removes all calibration markers for the given layout from its sheet.
+Public Sub HideCalibrationMarkers(layoutName As String)
+    Dim ws As Worksheet
+    Set ws = LayoutImage.GetLayoutSheet(layoutName)
+    If ws Is Nothing Then Exit Sub
+
+    Dim sanName As String
+    sanName = SanitizeSheetName(layoutName)
+
+    ' Collect names first — modifying the Shapes collection while iterating causes errors
+    Dim names() As String
+    ReDim names(ws.Shapes.Count - 1)
+    Dim count As Integer
+    count = 0
+
+    Dim shp As Shape
+    For Each shp In ws.Shapes
+        If Left(shp.Name, Len(MKR_PREFIX_X & sanName)) = MKR_PREFIX_X & sanName Or _
+           Left(shp.Name, Len(MKR_PREFIX_Y & sanName)) = MKR_PREFIX_Y & sanName Then
+            names(count) = shp.Name
+            count = count + 1
+        End If
+    Next shp
+
+    Dim k As Integer
+    For k = 0 To count - 1
+        On Error Resume Next
+        ws.Shapes(names(k)).Delete
+        On Error GoTo 0
+    Next k
+End Sub
+
+Private Sub PlaceAxisMarkers(ws As Worksheet, tbl As ListObject, layoutName As String, _
+                              isX As Boolean, imgLeft As Double, imgTop As Double)
+    If tbl Is Nothing Then Exit Sub
+    If tbl.DataBodyRange Is Nothing Then Exit Sub
+
+    Const BOX_W  As Double = 34
+    Const BOX_H  As Double = 22
+    Const MARGIN As Double = 3
+
+    Dim sanName As String
+    sanName = SanitizeSheetName(layoutName)
+
+    Dim i As Long
+    For i = 1 To tbl.ListRows.Count
+        Dim r As ListRow
+        Set r = tbl.ListRows(i)
+        If r.Range(1).Value <> layoutName Then GoTo NextRow
+
+        Dim lbl As String, pos As Double, m As Double
+        lbl = CStr(r.Range(2).Value)
+        pos = CDbl(r.Range(3).Value)
+        m   = CDbl(r.Range(4).Value)
+
+        Dim l As Double, t As Double
+        If isX Then
+            l = pos - BOX_W / 2
+            t = imgTop + MARGIN
+        Else
+            l = imgLeft + MARGIN
+            t = pos - BOX_H / 2
+        End If
+
+        Dim mkr As Shape
+        Set mkr = ws.Shapes.AddShape(msoShapeRectangle, l, t, BOX_W, BOX_H)
+
+        If isX Then
+            mkr.Name = MKR_PREFIX_X & sanName & "_" & lbl
+            mkr.Fill.ForeColor.RGB = RGB(0, 120, 215)
+        Else
+            mkr.Name = MKR_PREFIX_Y & sanName & "_" & lbl
+            mkr.Fill.ForeColor.RGB = RGB(0, 160, 80)
+        End If
+
+        With mkr
+            .Fill.Transparency = 0.25
+            .Line.Visible = msoFalse
+            .Placement = xlFreeFloating
+        End With
+        With mkr.TextFrame2
+            .TextRange.Text = lbl & Chr(10) & Format(m, "0.00") & "m"
+            .TextRange.Font.Size = 7
+            .TextRange.Font.Bold = msoTrue
+            .TextRange.Font.Fill.ForeColor.RGB = RGB(255, 255, 255)
+            .VerticalAnchor = msoAnchorMiddle
+            .TextRange.ParagraphFormat.Alignment = msoAlignCenter
+        End With
+
+NextRow:
+    Next i
 End Sub
 
 ' ── Helpers ───────────────────────────────────────────────────────────────────

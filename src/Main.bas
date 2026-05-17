@@ -28,6 +28,20 @@ Public Sub RunColorProcessing()
     ColorHelper.ProcessColorColumn
 End Sub
 
+Public Sub RunShowCalibrationMarkers()
+    Dim layoutName As String
+    layoutName = InputBox("Layoutname:", "Kalibrierungsmarker anzeigen")
+    If Trim(layoutName) = "" Then Exit Sub
+    Calibration.ShowCalibrationMarkers Trim(layoutName)
+End Sub
+
+Public Sub RunHideCalibrationMarkers()
+    Dim layoutName As String
+    layoutName = InputBox("Layoutname:", "Kalibrierungsmarker ausblenden")
+    If Trim(layoutName) = "" Then Exit Sub
+    Calibration.HideCalibrationMarkers Trim(layoutName)
+End Sub
+
 Public Sub RunCollisionCheck()
     CollisionChecker.CheckAll
 End Sub
