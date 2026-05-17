@@ -53,35 +53,38 @@ Public Sub BuildLayoutSelectorForm()
     btnCancel.Width = 60:  btnCancel.Height = 20
     btnCancel.Cancel = True
 
-    ' Inject form event code
+    ' Inject form event code (built line by line to avoid line-continuation limit)
     Dim c As String
-    c = "Private mResult As String" & vbLf & _
-        vbLf & _
-        "Public Property Get SelectedLayout() As String" & vbLf & _
-        "    SelectedLayout = mResult" & vbLf & _
-        "End Property" & vbLf & _
-        vbLf & _
-        "Private Sub UserForm_Activate()" & vbLf & _
-        "    mResult = " & Chr(34) & Chr(34) & vbLf & _
-        "End Sub" & vbLf & _
-        vbLf & _
-        "Private Sub btnOK_Click()" & vbLf & _
-        "    If cboLayout.ListIndex < 0 Then" & vbLf & _
-        "        MsgBox " & Chr(34) & "Bitte ein Layout ausw" & Chr(34) & " & Chr(228) & " & Chr(34) & "hlen." & Chr(34) & ", vbExclamation" & vbLf & _
-        "        Exit Sub" & vbLf & _
-        "    End If" & vbLf & _
-        "    mResult = cboLayout.Value" & vbLf & _
-        "    Me.Hide" & vbLf & _
-        "End Sub" & vbLf & _
-        vbLf & _
-        "Private Sub btnCancel_Click()" & vbLf & _
-        "    mResult = " & Chr(34) & Chr(34) & vbLf & _
-        "    Me.Hide" & vbLf & _
-        "End Sub" & vbLf & _
-        vbLf & _
-        "Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)" & vbLf & _
-        "    If CloseMode = vbFormControlMenu Then mResult = " & Chr(34) & Chr(34) & vbLf & _
-        "End Sub"
+    Dim q As String
+    q = Chr(34)
+
+    c = "Private mResult As String" & vbLf
+    c = c & vbLf
+    c = c & "Public Property Get SelectedLayout() As String" & vbLf
+    c = c & "    SelectedLayout = mResult" & vbLf
+    c = c & "End Property" & vbLf
+    c = c & vbLf
+    c = c & "Private Sub UserForm_Activate()" & vbLf
+    c = c & "    mResult = " & q & q & vbLf
+    c = c & "End Sub" & vbLf
+    c = c & vbLf
+    c = c & "Private Sub btnOK_Click()" & vbLf
+    c = c & "    If cboLayout.ListIndex < 0 Then" & vbLf
+    c = c & "        MsgBox " & q & "Bitte ein Layout ausw" & q & " & Chr(228) & " & q & "hlen." & q & ", vbExclamation" & vbLf
+    c = c & "        Exit Sub" & vbLf
+    c = c & "    End If" & vbLf
+    c = c & "    mResult = cboLayout.Value" & vbLf
+    c = c & "    Me.Hide" & vbLf
+    c = c & "End Sub" & vbLf
+    c = c & vbLf
+    c = c & "Private Sub btnCancel_Click()" & vbLf
+    c = c & "    mResult = " & q & q & vbLf
+    c = c & "    Me.Hide" & vbLf
+    c = c & "End Sub" & vbLf
+    c = c & vbLf
+    c = c & "Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)" & vbLf
+    c = c & "    If CloseMode = vbFormControlMenu Then mResult = " & q & q & vbLf
+    c = c & "End Sub"
 
     vbc.CodeModule.AddFromString c
 
