@@ -5,7 +5,7 @@ Private Const SHEET_NAME  As String = "Kalibrierung"
 Private Const TABLE_X     As String = "Kalibrierung_X"
 Private Const TABLE_Y     As String = "Kalibrierung_Y"
 Private Const COL_X_START As Integer = 1   ' Column A
-Private Const COL_Y_START As Integer = 5   ' Column E  (gap of one empty column)
+Private Const COL_Y_START As Integer = 6   ' Column F  (4 cols X + 1 gap)
 
 Public Sub CreateCalibrationSheet()
     Dim ws As Worksheet
@@ -45,15 +45,16 @@ Private Sub BuildAxisTable(ws As Worksheet, tableName As String, _
     End With
 
     ' Column headers in row 2
-    ws.Cells(HDR_ROW + 1, startCol).Value = "Bezeichnung"
-    ws.Cells(HDR_ROW + 1, startCol + 1).Value = "Pixelposition"
-    ws.Cells(HDR_ROW + 1, startCol + 2).Value = "Abstand (m)"
+    ws.Cells(HDR_ROW + 1, startCol).Value = "Layout"
+    ws.Cells(HDR_ROW + 1, startCol + 1).Value = "Bezeichnung"
+    ws.Cells(HDR_ROW + 1, startCol + 2).Value = "Pixelposition"
+    ws.Cells(HDR_ROW + 1, startCol + 3).Value = "Abstand (m)"
 
     ' Create Excel table starting at header row
     Dim tblRange As Range
     Set tblRange = ws.Range( _
         ws.Cells(HDR_ROW + 1, startCol), _
-        ws.Cells(HDR_ROW + 1, startCol + 2))
+        ws.Cells(HDR_ROW + 1, startCol + 3))
 
     Dim tbl As ListObject
     Set tbl = ws.ListObjects.Add( _
@@ -64,11 +65,12 @@ Private Sub BuildAxisTable(ws As Worksheet, tableName As String, _
     tbl.TableStyle = "TableStyleLight9"
 
     ' Column widths
-    ws.Columns(startCol).ColumnWidth = 16       ' Bezeichnung
-    ws.Columns(startCol + 1).ColumnWidth = 16   ' Pixelposition
-    ws.Columns(startCol + 2).ColumnWidth = 14   ' Abstand (m)
+    ws.Columns(startCol).ColumnWidth = 20       ' Layout
+    ws.Columns(startCol + 1).ColumnWidth = 16   ' Bezeichnung
+    ws.Columns(startCol + 2).ColumnWidth = 16   ' Pixelposition
+    ws.Columns(startCol + 3).ColumnWidth = 14   ' Abstand (m)
 
-    ' Number format for pixel and meter columns (applied to data rows via column)
-    ws.Columns(startCol + 1).NumberFormat = "0"
-    ws.Columns(startCol + 2).NumberFormat = "0.00"
+    ' Number format for pixel and meter columns
+    ws.Columns(startCol + 2).NumberFormat = "0"
+    ws.Columns(startCol + 3).NumberFormat = "0.00"
 End Sub
