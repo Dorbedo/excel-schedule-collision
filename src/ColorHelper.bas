@@ -1,56 +1,73 @@
 Attribute VB_Name = "ColorHelper"
 Option Explicit
 
-' Converts HEX string (#FF0000 or FF0000) to Excel color Long. Returns -1 on error.
-Public Function HexToLong(hexStr As String) As Long
-    hexStr = Trim(hexStr)
-    If Left(hexStr, 1) = "#" Then hexStr = Mid(hexStr, 2)
-    If Len(hexStr) <> 6 Then HexToLong = -1: Exit Function
+' Parses any supported color string into r, g, b, a components (all 0-255).
+' Supported formats:
+'   HEX: "#RRGGBB", "RRGGBB", "#AARRGGBB", "AARRGGBB"
+'   RGB: "R,G,B" or "R,G,B,A"
+' Returns True on success. Alpha defaults to 255 (opaque) when not specified.
+Public Function ParseColorString(colorStr As String, _
+                                  ByRef r As Long, ByRef g As Long, _
+                                  ByRef b As Long, ByRef a As Long) As Boolean
+    colorStr = Trim(colorStr)
+    r = 0: g = 0: b = 0: a = 255
 
-    On Error GoTo InvalidHex
-    Dim r As Long, g As Long, b As Long
-    r = CLng("&H" & Left(hexStr, 2))
-    g = CLng("&H" & Mid(hexStr, 3, 2))
-    b = CLng("&H" & Right(hexStr, 2))
-    HexToLong = RGB(r, g, b)
-    Exit Function
-InvalidHex:
-    HexToLong = -1
-End Function
+    On Error GoTo ParseError
 
-' Converts RGB string "255,0,0" to Excel color Long. Returns -1 on error.
-Public Function RGBStringToLong(rgbStr As String) As Long
-    On Error GoTo InvalidRGB
-    Dim parts() As String
-    parts = Split(Trim(rgbStr), ",")
-    If UBound(parts) <> 2 Then RGBStringToLong = -1: Exit Function
+    If InStr(colorStr, ",") > 0 Then
+        ' RGB / RGBA format: "R,G,B" or "R,G,B,A"
+        Dim parts() As String
+        parts = Split(colorStr, ",")
+        If UBound(parts) < 2 Or UBound(parts) > 3 Then GoTo ParseError
+        r = CLng(Trim(parts(0)))
+        g = CLng(Trim(parts(1)))
+        b = CLng(Trim(parts(2)))
+        If UBound(parts) = 3 Then a = CLng(Trim(parts(3)))
+    Else
+        ' HEX format
+        Dim hexStr As String
+        hexStr = colorStr
+        If Left(hexStr, 1) = "#" Then hexStr = Mid(hexStr, 2)
 
-    Dim r As Long, g As Long, b As Long
-    r = CLng(Trim(parts(0)))
-    g = CLng(Trim(parts(1)))
-    b = CLng(Trim(parts(2)))
-
-    If r < 0 Or r > 255 Or g < 0 Or g > 255 Or b < 0 Or b > 255 Then
-        RGBStringToLong = -1: Exit Function
+        Select Case Len(hexStr)
+            Case 6  ' RRGGBB
+                r = CLng("&H" & Mid(hexStr, 1, 2))
+                g = CLng("&H" & Mid(hexStr, 3, 2))
+                b = CLng("&H" & Mid(hexStr, 5, 2))
+            Case 8  ' AARRGGBB
+                a = CLng("&H" & Mid(hexStr, 1, 2))
+                r = CLng("&H" & Mid(hexStr, 3, 2))
+                g = CLng("&H" & Mid(hexStr, 5, 2))
+                b = CLng("&H" & Mid(hexStr, 7, 2))
+            Case Else
+                GoTo ParseError
+        End Select
     End If
-    RGBStringToLong = RGB(r, g, b)
+
+    If r < 0 Or r > 255 Or g < 0 Or g > 255 Or _
+       b < 0 Or b > 255 Or a < 0 Or a > 255 Then GoTo ParseError
+
+    ParseColorString = True
     Exit Function
-InvalidRGB:
-    RGBStringToLong = -1
+ParseError:
+    ParseColorString = False
 End Function
 
-' Converts Excel color Long to HEX string (#RRGGBB)
+' Converts Excel color Long (BGR) + explicit alpha to #AARRGGBB string.
+' Excel cell fills are always opaque, so alpha from Interior.Color is always FF.
 Public Function LongToHex(colorLong As Long) As String
     Dim r As Long, g As Long, b As Long
-    r = colorLong Mod 256
-    g = (colorLong \ 256) Mod 256
-    b = (colorLong \ 65536) Mod 256
-    LongToHex = "#" & Right("00" & Hex(r), 2) & Right("00" & Hex(g), 2) & Right("00" & Hex(b), 2)
+    r = colorLong And 255
+    g = (colorLong \ 256) And 255
+    b = (colorLong \ 65536) And 255
+    LongToHex = "#FF" & Right("00" & Hex(r), 2) & _
+                Right("00" & Hex(g), 2) & _
+                Right("00" & Hex(b), 2)
 End Function
 
 ' Processes the Farbe column:
-'   HEX/RGB value in cell  -> applies fill color to cell
-'   Empty cell with fill   -> reads fill color and writes HEX into cell
+'   HEX/RGB value in cell  -> applies RGB fill to cell (alpha preserved in text)
+'   Empty cell with fill   -> reads fill color, writes #AARRGGBB (alpha=FF)
 Public Sub ProcessColorColumn()
     Dim ws As Worksheet
     On Error Resume Next
@@ -73,24 +90,21 @@ Public Sub ProcessColorColumn()
 
     Dim cell As Range
     Dim cellText As String
-    Dim colorVal As Long
+    Dim r As Long, g As Long, b As Long, a As Long
 
     For Each cell In colorCol.DataBodyRange
         cellText = Trim(cell.Value)
 
         If cellText = "" Then
-            ' Empty cell: read existing fill color if set
+            ' Empty cell: read existing fill color and write as #AARRGGBB
             If cell.Interior.ColorIndex <> xlNone Then
                 cell.Value = LongToHex(cell.Interior.Color)
             End If
-        ElseIf InStr(cellText, ",") > 0 Then
-            ' RGB format: "255,0,0"
-            colorVal = RGBStringToLong(cellText)
-            If colorVal >= 0 Then cell.Interior.Color = colorVal
         Else
-            ' HEX format: "#FF0000" or "FF0000"
-            colorVal = HexToLong(cellText)
-            If colorVal >= 0 Then cell.Interior.Color = colorVal
+            ' Parse and apply — alpha is kept in cell text, only RGB applied to fill
+            If ParseColorString(cellText, r, g, b, a) Then
+                cell.Interior.Color = RGB(r, g, b)
+            End If
         End If
     Next cell
 
