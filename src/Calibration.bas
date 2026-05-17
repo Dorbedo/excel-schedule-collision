@@ -125,65 +125,6 @@ Public Sub ApplyCalibrationRect(layoutName As String)
     MsgBox "Kalibrierung f" & Chr(252) & "r '" & layoutName & "' gespeichert.", vbInformation
 End Sub
 
-' ── Layout picker ────────────────────────────────────────────────────────────
-
-' Shows frmLayoutSelector populated with all layouts that have an embedded image.
-' Returns the selected layout name, or "" if cancelled.
-' Requires frmLayoutSelector to exist — run FormBuilder.BuildLayoutSelectorForm once first.
-Public Function PickLayoutName(title As String) As String
-    Dim names() As String
-    Dim count As Integer
-    count = CollectLayoutNames(names)
-
-    If count = 0 Then
-        MsgBox "Keine Layouts gefunden. Bitte zuerst ein Layout importieren.", vbExclamation
-        Exit Function
-    End If
-
-    Dim frm As Object
-    On Error GoTo NoForm
-    Set frm = VBA.UserForms.Add("frmLayoutSelector")
-    On Error GoTo 0
-
-    frm.Caption = title
-    frm.Controls("cboLayout").Clear
-    Dim i As Integer
-    For i = 0 To count - 1
-        frm.Controls("cboLayout").AddItem names(i)
-    Next i
-
-    frm.Show
-    PickLayoutName = frm.SelectedLayout
-    Unload frm
-    Exit Function
-
-NoForm:
-    MsgBox "frmLayoutSelector nicht gefunden." & vbLf & _
-           "Bitte einmalig 'RunBuildForms' ausf" & Chr(252) & "hren.", vbExclamation
-End Function
-
-' Collects layout names from all sheets that contain an embedded layout image.
-' Returns the count; names() is filled with the sheet names.
-Private Function CollectLayoutNames(ByRef names() As String) As Integer
-    Dim count As Integer
-    count = 0
-
-    Dim ws As Worksheet
-    Dim shp As Shape
-    For Each ws In ThisWorkbook.Sheets
-        For Each shp In ws.Shapes
-            If Left(shp.Name, 5) = "Bild_" Then
-                ReDim Preserve names(count)
-                names(count) = ws.Name
-                count = count + 1
-                Exit For
-            End If
-        Next shp
-    Next ws
-
-    CollectLayoutNames = count
-End Function
-
 ' ── Calibration markers ──────────────────────────────────────────────────────
 
 ' Places small labelled boxes on the layout sheet at each calibrated position.
