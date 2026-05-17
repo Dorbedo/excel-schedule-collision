@@ -3,6 +3,7 @@ Option Explicit
 
 Public Sub RunSetup()
     TableSetup.CreateTaskTable
+    CalibrationSetup.CreateCalibrationSheet
 End Sub
 
 Public Sub RunColorProcessing()
