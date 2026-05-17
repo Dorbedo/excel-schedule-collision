@@ -10,7 +10,7 @@ Public Function ParseColorString(colorStr As String, _
                                   ByRef r As Long, ByRef g As Long, _
                                   ByRef b As Long, ByRef a As Long) As Boolean
     colorStr = Trim(colorStr)
-    r = 0: g = 0: b = 0: a = 255
+    r = 0: g = 0: b = 0: a = 128
 
     On Error GoTo ParseError
 
@@ -60,7 +60,7 @@ Public Function LongToHex(colorLong As Long) As String
     r = colorLong And 255
     g = (colorLong \ 256) And 255
     b = (colorLong \ 65536) And 255
-    LongToHex = "#FF" & Right("00" & Hex(r), 2) & _
+    LongToHex = "#80" & Right("00" & Hex(r), 2) & _
                 Right("00" & Hex(g), 2) & _
                 Right("00" & Hex(b), 2)
 End Function
